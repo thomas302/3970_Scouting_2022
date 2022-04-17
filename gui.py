@@ -3,9 +3,11 @@ import csv
 import pickle
 import os
 import datetime as d
+import traceback
+import regional as r
+
 from datetime import datetime
 from io import StringIO
-import regional as r
 
 PST_timezone = d.timezone(d.timedelta(hours=-8))
 regional = r.regional()
@@ -22,7 +24,7 @@ def pickleRegional():
 sg.theme('DarkAmber')
 
 enteredDataList = [
-    [sg.Table([["list"],[2]], expand_x=True, expand_y=True)]
+    [sg.Table([["list"],[2]], expand_x=True, expand_y=True, key="rawMatchList")]
     ]
 
 inputTab = [
@@ -40,15 +42,20 @@ mainWindowLayout = [
         ]
 
 mainWindowLayout = [
-        [sg.TabGroup(tg_layout, key="")]
+        [sg.TabGroup(tg_layout)]
+        [sg.Button("Save Data", key="save")]
         ]
 
 window = sg.Window("Main Window", mainWindowLayout, size=(800,500), resizable=True)
+
+validDataEntry = False
 
 def addMatch(data: tuple):
     if not data[0] == "":
         f = StringIO(data[0])
         dataList = list(csv.reader(f, delimiter=';'))[0]
+    else:
+        raise ValueError("No Match Data")
 
     m = r.matchData(dataList)
     regional.addNewMatch(m, data[1], data[2], data[3])
@@ -76,16 +83,30 @@ def matchEntry():
             otherComments = values[3]
             # append a match instance to the match list
             meWin.close()
+
             return data, defenseComments, failComments, otherComments
 
+try:
+    while True: 
+        event, values = window.read()
+        validDataEntry = False
+        # End program if user closes window or
+        # presses the OK button
+        if event == "input":
+            if validDataEntry:
+                try: addMatch(matchEntry())
+                except ValueError: traceback.print_exc()
 
-while True:
-    event, values = window.read()
-    # End program if user closes window or
-    # presses the OK button
-    if event == "input":
-        addMatch(matchEntry())
-        
-    if event == sg.WIN_CLOSED:
-        pickleRegional()
-        break 
+                window["rawMatchList"].Update(values=regional.rawMatchList)
+            else:
+                print("Invalid Data Entry")
+
+        if event == "save":
+            pickleRegional()
+            
+        if event == sg.WIN_CLOSED:
+            pickleRegional()
+            break 
+except:
+    pickleRegional()
+    traceback.print_exc()
