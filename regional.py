@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from statistics import multimode
+import pickle
 
 @dataclass
 class matchData:
@@ -99,6 +100,7 @@ class Team_In_List(ValueError):
 class regional():
     def __init__(self):
         self.teamList: dict(int, team) = dict()
+        self.rawMatchList = [["Raw Data", "Defense Comments", "Catastrophe Comments", "Other Comments"]]
 
     def addTeam(self, teamNumber):
         if not teamNumber in self.teamList:
@@ -135,8 +137,4 @@ class regional():
     
     # TODO
     def getTeamsOverClimbThreshold(self, level, percent = None):
-        pass
-    
-    @classmethod
-    def pickle(cls):
-        pass
+        pass 
