@@ -131,9 +131,7 @@ class regional():
 
             if t.averageTelePoints >= shotThreshold:
                 teams.append(t)
-        
-        print(teams)
-        
+         
         t: team
         self.teamsOverShotThreshold = list(sorted(teams, key=lambda t: t.averageTelePoints, reverse=True))
     

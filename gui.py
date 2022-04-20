@@ -102,6 +102,7 @@ while True:
                 f = open(fileLocation['Browse'], 'rb')
                 regional = pickle.load(f)
                 f.close()
+                fileSelectWindow.close()
                 break
             else:
                 raise ValueError("No Such File Exists")
@@ -110,7 +111,9 @@ while True:
             e, v = sg.Window("Enter a valid file", [[sg.Text("The file you entered does not exist")],
                 [sg.Button("Ok")]]).read(close=True)
             traceback.print_exc()
+
     if event == "Skip":
+        fileSelectWindow.close()
         break
 
 
@@ -143,7 +146,6 @@ try:
         t: r.team
         for t in regional.teamsOverShotThreshold:
             shotThresholdList.append([t.teamNumber, t.averageTelePoints])
-            print([t.teamNumber, t.averageTelePoints])
         
         shotThresholdList = shotThresholdList if len(shotThresholdList) >= 1 else ['','']
 
