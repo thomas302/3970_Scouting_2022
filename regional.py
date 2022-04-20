@@ -1,27 +1,26 @@
 from dataclasses import dataclass
 from statistics import multimode
-import pickle
 
-@dataclass
-class matchData:
-    mainList: list
-    def __init__(self):
-        matchNumber = self.mainList[0]
-        teamNumber = self.mainList[1]
-        taxi = (True if self.mainList[2] == 'true' else False if self.mainList[2] == 'false' else None)
-        autoShotsTaken = int(self.mainList[3])
-        autoShotsHigh = int(self.mainList[4])
-        autoShotsLow = int(self.mainList[5])
-        twoBall = (True if self.mainList[6] == 'true' else False if self.mainList[6] == 'false' else None)
-        teleShotsTaken = int(self.mainList[7])
-        teleShotsHigh = int(self.mainList[8])
-        teleShotsLow = int(self.mainList[9])
-        stoppedFromScoring = (True if self.mainList[10] == 'true' else False if self.mainList[10] == 'false' else None)
-        defense = (True if self.mainList[11] == 'true' else False if self.mainList[11] == 'false' else None) 
-        endgameShooting = (True if self.mainList[12] == 'true' else False if self.mainList[12] == 'false' else None)
-        climbLevel = int(self.mainList[13])
-        disabled = self.mainList[14]
-        mainFocus = self.mainList[15].split(',')
+class matchData: 
+    def __init__(self, mainList = list()):
+        self.mainList = mainList
+        self.matchNumber = self.mainList[0]
+        self.teamNumber = self.mainList[1]
+        print(self.teamNumber)
+        self.taxi = (True if self.mainList[2] == 'true' else False if self.mainList[2] == 'false' else None)
+        self.autoShotsTaken = int(self.mainList[3])
+        self.autoShotsHigh = int(self.mainList[4])
+        self.autoShotsLow = int(self.mainList[5])
+        self.twoBall = (True if self.mainList[6] == 'true' else False if self.mainList[6] == 'false' else None)
+        self.teleShotsTaken = int(self.mainList[7])
+        self.teleShotsHigh = int(self.mainList[8])
+        self.teleShotsLow = int(self.mainList[9])
+        self.stoppedFromScoring = (True if self.mainList[10] == 'true' else False if self.mainList[10] == 'false' else None)
+        self.defense = (True if self.mainList[11] == 'true' else False if self.mainList[11] == 'false' else None) 
+        self.endgameShooting = (True if self.mainList[12] == 'true' else False if self.mainList[12] == 'false' else None)
+        self.climbLevel = int(self.mainList[13])
+        self.disabled = self.mainList[14]
+        self.mainFocus = self.mainList[15].split(',')
 
 class match():
     def __init__(self, data: matchData, defenseComments, catastropheComments, otherComments):
@@ -35,8 +34,8 @@ class team():
         self.teamNumber = teamNumber
         self.matchList = []
 
-    def addMatch(self, match: match):
-        self.matchList.append(match)
+    def addMatch(self, m: match):
+        self.matchList.append(m)
     
     def updateAutoData(self, filterFunc=lambda x: True):
         matchList = filter(filterFunc, self.matchList)
@@ -66,7 +65,7 @@ class team():
 
 
     def updateShotData(self, filterFunc=lambda x: True):
-        matchList = filter(filterFunc, self.matchList)
+        matchList = list(filter(filterFunc, self.matchList))
         shotsTaken = 0
         shotsMade = 0
         shotsHigh = 0
@@ -100,16 +99,16 @@ class Team_In_List(ValueError):
 class regional():
     def __init__(self):
         self.teamList: dict(int, team) = dict()
-        self.rawMatchList = [["Raw Data", "Defense Comments", "Catastrophe Comments", "Other Comments"]]
+        self.rawMatchList = dict()
 
     def addTeam(self, teamNumber):
-        if not teamNumber in self.teamList:
+        if not teamNumber in self.teamList.keys():
             self.teamList[teamNumber] = team(teamNumber)
         else:
             raise Team_In_List("That team is already in the Teams List")
 
     def addNewMatch(self, match: match):
-        if not match.data.teamNumber in self.teamList:
+        if not match.data.teamNumber in self.teamList.keys():
             self.addTeam(match.data.teamNumber)
 
         t: team = self.teamList[match.data.teamNumber]
@@ -125,15 +124,18 @@ class regional():
         
         teams = []
         
-        for t in self.teamList:
-            self.teamList[t].updateShotData(f)
-            self.teamList[t].calcAverageTelePoints()
+
+        for k, t in self.teamList.items():
+            t.updateShotData(f)
+            t.calcAverageTelePoints()
 
             if t.averageTelePoints >= shotThreshold:
                 teams.append(t)
         
+        print(teams)
+        
         t: team
-        return teams.sort(key=lambda t: t.averageTelePoints, reverse=True)
+        self.teamsOverShotThreshold = list(sorted(teams, key=lambda t: t.averageTelePoints, reverse=True))
     
     # TODO
     def getTeamsOverClimbThreshold(self, level, percent = None):
