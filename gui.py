@@ -130,8 +130,9 @@ try:
 
             if validDataEntry:
                 try: addMatch(entry)
-                except ValueError as e: print(e) 
-                print("Invalid Data Entry")
+                except ValueError as e: 
+                    print(e) 
+                    print("Invalid Data Entry")
 
         if event == "save":
             pickleRegional()
