@@ -16,7 +16,7 @@ regional = r.regional()
 def pickleRegional():
     dt = datetime.now()
     dt_string = r''.join(dt.strftime('%d-%m-%Y H%H M%M S%S'))
-    path = r''.join([r'Regional Data ', dt_string, r'.pickle'])
+    path = r''.join(['pickled_data\\', r'Regional Data ', dt_string, r'.pickle'])
     with open(path , 'wb') as f:
         pickle.dump(regional, f)
 
@@ -116,10 +116,11 @@ while True:
         fileSelectWindow.close()
         break
 
-
+count = 0
 try:
     while True: 
         event, values = window.read(timeout=50) 
+        count += 1;
 
         if event == "input":
             entry = matchEntry()
@@ -149,6 +150,10 @@ try:
             shotThresholdList.append([t.teamNumber, t.averageTelePoints])
         
         shotThresholdList = shotThresholdList if len(shotThresholdList) >= 1 else ['','']
+
+        if count >= 12000:
+            pickleRegional()
+            count = 0
 
         window["ShotThreshold"].Update(values=shotThresholdList)
         window["rawMatchList"].Update(values=regional.rawMatchList)
