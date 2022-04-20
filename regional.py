@@ -99,7 +99,7 @@ class Team_In_List(ValueError):
 class regional():
     def __init__(self):
         self.teamList: dict(int, team) = dict()
-        self.rawMatchList = dict()
+        self.rawMatchList = list()
 
     def addTeam(self, teamNumber):
         if not teamNumber in self.teamList.keys():

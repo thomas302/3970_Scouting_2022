@@ -15,8 +15,8 @@ regional = r.regional()
 
 def pickleRegional():
     dt = datetime.now()
-    dt_string = r''.join(dt.strftime('%d-%m-%Y H%H M%M S%S'))
-    path = r''.join(['pickled_data\\', r'Regional Data ', dt_string, r'.pickle'])
+    dt_string = ''.join(dt.strftime('%d-%m-%Y H%H M%M S%S')) 
+    path = ''.join([r'Regional Data ', dt_string, r'.pickle'])
     with open(path , 'wb') as f:
         pickle.dump(regional, f)
 
@@ -154,9 +154,12 @@ try:
         if count >= 12000:
             pickleRegional()
             count = 0
-
+        
+        displayMatchList = []
+        for i in regional.rawMatchList:
+            displayMatchList.append([str(i[0].data.mainList), i[1], i[2], i[3]])
         window["ShotThreshold"].Update(values=shotThresholdList)
-        window["rawMatchList"].Update(values=regional.rawMatchList)
+        window["rawMatchList"].Update(values=displayMatchList)
         window.refresh()
 except:
     traceback.print_exc()
