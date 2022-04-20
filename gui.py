@@ -65,9 +65,10 @@ def matchEntry():
         [sg.Text("Other Comments"), sg.InputText()],
         [sg.Button("Submit")],
         ]
-
+    
+    meWin = sg.Window("Data Input", matchEntryLayout)
+    
     while True:
-        meWin = sg.Window("Data Input", matchEntryLayout)
         event, values = meWin.read()
         # End program if user closes window or
         # presses the OK button
@@ -80,6 +81,10 @@ def matchEntry():
             meWin.close()
 
             return data, defenseComments, failComments, otherComments
+
+        if event == sg.WIN_CLOSED: 
+            meWin.close()
+            return "Closed_Before_Entry"
 
 fswLayout = [
         [sg.Text("Choose a data file, or hit skip (if starting from scratch)")],
@@ -125,15 +130,15 @@ try:
         if event == "input":
             entry = matchEntry()
 
-            validDataEntry = True
-            if not len(entry[0].split(";")) == 15:
-                validDataEntry == False
+            if not entry == "Closed_Before_Entry":
+                try: 
+                    addMatch(entry)
 
-            if validDataEntry:
-                try: addMatch(entry)
                 except ValueError as e: 
                     print(e) 
                     print("Invalid Data Entry")
+            else:
+                print("No Entry")
 
         if event == "save":
             pickleRegional()
