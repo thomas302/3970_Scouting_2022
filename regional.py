@@ -77,14 +77,20 @@ class team():
             shotsMade += (m.data.teleShotsHigh+m.data.teleShotsLow)
             shotsHigh += (m.data.teleShotsHigh)
             shotsLow += (m.data.teleShotsLow)
-
-        self.shotPercentage = (shotsMade/shotsTaken)
         
-        addHigh = (shotsTaken-shotsMade) * (shotsHigh/shotsTaken)
-        addLow = (shotsTaken-shotsMade) * (shotsLow/shotsTaken)
+        if not shotsTaken == 0:
+            self.shotPercentage = (shotsMade/shotsTaken)
+            
+            addHigh = (shotsTaken-shotsMade) * (shotsHigh/shotsTaken)
+            addLow = (shotsTaken-shotsMade) * (shotsLow/shotsTaken)
 
-        self.averageShotsHigh = ((shotsHigh+addHigh)/len(matchList))
-        self.averageShotsLow = ((shotsLow+addLow)/len(matchList))
+            self.averageShotsHigh = ((shotsHigh+addHigh)/len(matchList))
+            self.averageShotsLow = ((shotsLow+addLow)/len(matchList))
+        else:
+            self.shotPercentage = 0
+            self.averageShotsHigh = 0
+            self.averageShotsLow = 0
+
 
     def calcAverageTelePoints(self):
         self.averageTelePoints = (self.averageShotsLow + 2 * self.averageShotsHigh)*self.shotPercentage
