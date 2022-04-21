@@ -6,6 +6,7 @@ import os
 import datetime as d
 import traceback
 import regional as r
+import time
 
 from datetime import datetime
 from io import StringIO
@@ -29,10 +30,19 @@ inputTab = [
         ]   
 
 firstPickTab = [
-            [sg.Table([['','']], headings=["Team Number", "Avg. Points"],key="ShotThreshold")],    
+            [sg.Table([['','']], headings=["Team Number", "Avg. Points"],key="ShotThreshold", expand_y=True)],    
             ]
 
-tg_layout = [[sg.Tab('Input Data', inputTab, tooltip='tip'), sg.Tab('Tab 2', firstPickTab)]]
+tab3 = [
+        [sg.Table([['', '', '', '', '']], headings=["Team Number", "Tele Avg. Points", "Auto Avg. Points", "Normal Climb Level, Percent", "Percent High+ Climb"], key="masterTable", expand_x=True, expand_y=True)]
+    ]
+
+tab4 = [
+        [sg.Text("Enter Team Number"), sg.InputText(key="lookupKey")],
+        [sg.Table([['', '', '', '', '']], headings=["Tele Avg. Points", "Auto Avg. Points", "Normal Climb Level, Percent", "Percent High+ Climb"], key="lookupTable", expand_x=True)]
+    ]
+
+tg_layout = [[sg.Tab('Input Data', inputTab, tooltip='tip'), sg.Tab('First Pick', firstPickTab), sg.Tab('Main List', tab3), sg.Tab('Team Lookup', tab4)]]
 
 mainWindowLayout = [
         [sg.TabGroup(tg_layout, expand_x=True, expand_y=True)],
@@ -121,11 +131,10 @@ while True:
         fileSelectWindow.close()
         break
 
-count = 0
+stime = time.time()
 try:
     while True: 
         event, values = window.read(timeout=50) 
-        count += 1;
 
         if event == "input":
             entry = matchEntry()
@@ -146,7 +155,6 @@ try:
         if event == sg.WIN_CLOSED:
             pickleRegional()
             break
-
         
         regional.getTeamsOverTelePointThreshold(20)
         shotThresholdList = list()
@@ -156,13 +164,35 @@ try:
         
         shotThresholdList = shotThresholdList if len(shotThresholdList) >= 1 else ['','']
 
-        if count >= 12000:
+        if time.time() - stime >= (10*60):
+            print("Data Saved")
             pickleRegional()
-            count = 0
+            stime = time.time()
         
-        displayMatchList = []
+        displayMatchList = list()
         for i in regional.rawMatchList:
             displayMatchList.append([str(i[0].data.mainList), i[1], i[2], i[3]])
+        
+        masterList_unsorted = list()
+        t: r.team
+        for key, t in regional.teamList.items():
+            if t.teamNumber == '':
+                continue
+
+            teamNumber = int(t.teamNumber)
+            masterList_unsorted.append([teamNumber, round(t.averageTelePoints, 3), '', '', ''])
+
+        masterList = sorted(masterList_unsorted, key=lambda t: t[0])
+        
+        values['lookupKey']
+        lookupNumber = values['lookupKey'] if values['lookupKey'] in regional.teamList.keys() else None
+        if not lookupNumber == None:
+            lookupTableList = [regional.teamList[lookupNumber].averageTelePoints, '', '', '']
+        else:
+            lookupTableList = ['', '', '', '']
+
+        window["masterTable"].Update(values=masterList)
+        window["lookupTable"].Update(values=lookupTableList)
         window["ShotThreshold"].Update(values=shotThresholdList)
         window["rawMatchList"].Update(values=displayMatchList)
         window.refresh()

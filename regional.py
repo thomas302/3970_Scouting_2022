@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from statistics import multimode
+import uuid 
 
 class matchData: 
     def __init__(self, mainList = list()):
@@ -28,6 +29,7 @@ class match():
         self.defenseComments = defenseComments
         self.catastropheComments = catastropheComments
         self.otherComments = otherComments
+        self.uuid = uuid.uuid4()
         
 class team():
     def __init__(self, teamNumber):
@@ -62,8 +64,6 @@ class team():
         self.autoAverageHigh = ((autoShotsHigh+addHigh)/len(matchList))
         self.autoAverageLow = ((autoShotsLow+addLow)/len(matchList))
 
-
-
     def updateShotData(self, filterFunc=lambda x: True):
         matchList = list(filter(filterFunc, self.matchList))
         shotsTaken = 0
@@ -91,11 +91,18 @@ class team():
             self.averageShotsHigh = 0
             self.averageShotsLow = 0
 
-
     def calcAverageTelePoints(self):
         self.averageTelePoints = (self.averageShotsLow + 2 * self.averageShotsHigh)*self.shotPercentage
 
     def calcAverageAutoPoints(self):
+        pass
+
+    def appendMatchList(self, matchList: list()):
+        m: match
+        for m in matchList:
+            self.matchList.append(m)
+
+    def rmMatch(self, match):
         pass
 
 class Team_In_List(ValueError):
