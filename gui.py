@@ -30,8 +30,7 @@ inputTab = [
         ]   
 
 firstPickTab = [
-            [sg.Table([['','']], headings=["Team Number", "Avg. Points"],key="ShotThreshold", expand_y=True)],    
-            ]
+            [sg.Table([['','']], headings=["Team Number", "Tele Avg. Points", "Auto Avg. Points"], key="ShotThreshold", expand_y=True), ]]
 
 tab3 = [
         [sg.Table([['', '', '', '', '']], headings=["Team Number", "Tele Avg. Points", "Auto Avg. Points", "Normal Climb Level, Percent", "Percent High+ Climb"], key="masterTable", expand_x=True, expand_y=True)]
@@ -156,13 +155,15 @@ try:
             pickleRegional()
             break
         
-        regional.getTeamsOverTelePointThreshold(20)
-        shotThresholdList = list()
+        regional.getTeamsOverTelePointThreshold(0)
+        regional.updateAutoData()
+    
+        firstPickList = list()
         t: r.team
         for t in regional.teamsOverShotThreshold:
-            shotThresholdList.append([t.teamNumber, t.averageTelePoints])
+            firstPickList.append([t.teamNumber, round(t.averageTelePoints,3), round(t.averageAutoPoints, 3)])
         
-        shotThresholdList = shotThresholdList if len(shotThresholdList) >= 1 else ['','']
+        firstPickList = firstPickList if len(firstPickList) >= 1 else [[ '', '', '', '']]
 
         if time.time() - stime >= (10*60):
             print("Data Saved")
@@ -180,20 +181,20 @@ try:
                 continue
 
             teamNumber = int(t.teamNumber)
-            masterList_unsorted.append([teamNumber, round(t.averageTelePoints, 3), '', '', ''])
+            masterList_unsorted.append([teamNumber, round(t.averageTelePoints, 3), round(t.averageAutoPoints, 3), '', ''])
 
         masterList = sorted(masterList_unsorted, key=lambda t: t[0])
         
-        values['lookupKey']
         lookupNumber = values['lookupKey'] if values['lookupKey'] in regional.teamList.keys() else None
         if not lookupNumber == None:
-            lookupTableList = [regional.teamList[lookupNumber].averageTelePoints, '', '', '']
+            lookupTableList = [round(regional.teamList[lookupNumber].averageTelePoints, 3), round(regional.teamList[lookupNumber].averageTelePoints,3), '', '']
         else:
             lookupTableList = ['', '', '', '']
 
         window["masterTable"].Update(values=masterList)
         window["lookupTable"].Update(values=lookupTableList)
-        window["ShotThreshold"].Update(values=shotThresholdList)
+        window["ShotThreshold"].Update(values=firstPickList)
+        #window["Auto"].Update()
         window["rawMatchList"].Update(values=displayMatchList)
         window.refresh()
 except:
