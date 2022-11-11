@@ -1,21 +1,20 @@
-from dataclasses import dataclass
 from statistics import multimode
 import uuid 
 
 class matchData: 
     def __init__(self, mainList = list()):
         self.mainList = mainList
-        self.matchNumber = self.mainList[0]
+        self.matchNumber = 0 if not self.mainList[0].isnumeric() else int(self.mainList[0])
         self.teamNumber = self.mainList[1]
         print(self.teamNumber)
         self.taxi = (True if self.mainList[2] == 'true' else False if self.mainList[2] == 'false' else None)
-        self.autoShotsTaken = int(self.mainList[3])
-        self.autoShotsHigh = int(self.mainList[4])
-        self.autoShotsLow = int(self.mainList[5])
+        self.autoShotsTaken = 0 if '' == self.mainList[3] else int(self.mainList[3])
+        self.autoShotsHigh = 0 if '' == self.mainList[4] else int(self.mainList[4])
+        self.autoShotsLow = 0 if '' == self.mainList[5] else int(self.mainList[5])
         self.twoBall = (True if self.mainList[6] == 'true' else False if self.mainList[6] == 'false' else None)
-        self.teleShotsTaken = int(self.mainList[7])
-        self.teleShotsHigh = int(self.mainList[8])
-        self.teleShotsLow = int(self.mainList[9])
+        self.teleShotsTaken = 0 if '' == self.mainList[7] else int(self.mainList[7])
+        self.teleShotsHigh = 0 if '' == self.mainList[8] else int(self.mainList[8])
+        self.teleShotsLow = 0 if '' == self.mainList[9] else int(self.mainList[9])
         self.stoppedFromScoring = (True if self.mainList[10] == 'true' else False if self.mainList[10] == 'false' else None)
         self.defense = (True if self.mainList[11] == 'true' else False if self.mainList[11] == 'false' else None) 
         self.endgameShooting = (True if self.mainList[12] == 'true' else False if self.mainList[12] == 'false' else None)
@@ -58,7 +57,7 @@ class team():
                 taxi_count += 1
                 taxi = True
 
-        self.taxi = taxi
+        self.taxi = taxi if taxi_count > 0 else False
         
         if not autoShotsMade == 0:
             addHigh = (autoShotsTaken-autoShotsMade) * (autoShotsHigh/autoShotsMade) if not autoShotsTaken == 0 else 0
@@ -71,7 +70,7 @@ class team():
             self.autoAverageHigh = 0
             self.autoShotPercentage = 0
 
-        self.taxi_score = (taxi_count/len(matchList))*2
+        self.taxi_score = 0 if len(matchList) == 0 else (taxi_count/len(matchList))*2
 
     def updateShotData(self, filterFunc=lambda x: True):
         matchList = list(filter(filterFunc, self.matchList))
@@ -87,7 +86,7 @@ class team():
             shotsHigh += (m.data.teleShotsHigh)
             shotsLow += (m.data.teleShotsLow)
         
-        if not (shotsTaken == 0 or shotsMade == 0):
+        if not (shotsTaken == 0):
             self.shotPercentage = (shotsMade/shotsTaken)
             
             addHigh = (shotsTaken-shotsMade) * (shotsHigh/shotsTaken)
@@ -100,9 +99,9 @@ class team():
             self.averageShotsHigh = 0
             self.averageShotsLow = 0
 
-    def updateClimbData(self, filterFunc=lambda x:true):
+    def updateClimbData(self, filterFunc=lambda x:True):
         matchList = list(filter(filterFunc, self.matchList))
-        noClimb = ["No Climb", 0]
+        noClimb = ["No Climb", 0, 0]
         attempt = ["Attempt", 0, 0]
         level_1 = ["Level 1", 0, 0]
         level_2 = ["Level 2", 0, 0]
@@ -123,6 +122,7 @@ class team():
                 level_3[1] += 1
             if m.data.climbLevel == 4:
                 level_4[1] += 1
+
         levels = [
                   noClimb,
                   attempt,
@@ -132,10 +132,16 @@ class team():
                   level_4,
                  ]
 
-        levels = sorted(levels, key=lambda x: x[1])
+        levels = sorted(levels, key=lambda x: x[1], reverse=True)
         
+        self.high_plus_percent = 0
+
         for level in levels:
             level[2] = level[1]/len(matchList)
+
+            if level[0] == 'Level 3' or level[0] == 'Level 4':
+                self.high_plus_percent += level[2]
+
         self.levels = levels
 
 
@@ -175,22 +181,12 @@ class regional():
         t: team = self.teamList[match.data.teamNumber]
         t.addMatch(match)
 
-    def dumpJson(self):
-        m: match
-        for m in self.rawMatchList:
-            pass
-
-        t: team
-        for t in self.teamList:
-            for m in t.matchList:
-                pass
-
     def getTeamsOverTelePointThreshold(self, shotThreshold, matchThreshold = None):
         if matchThreshold == None:
             f = lambda x: True
         else:
             x: match
-            f = lambda x: x.data.matchNumber >= matchThreshold
+            f = lambda x: (0 if not x.data.matchNumber.isnumeric() else int(x.data.matchNumber)) >= matchThreshold
         
         teams = [] 
 
@@ -209,19 +205,19 @@ class regional():
             f = lambda x: True
         else:
             x: match
-            f = lambda x: x.data.matchNumber >= matchThreshold
+            f = lambda x: (0 if not x.data.matchNumber.isnumeric() else int(x.data.matchNumber)) >= matchThreshold
         
         t: team
         for k, t in self.teamList.items():
             t.updateAutoData(f)
             t.calcAverageAutoPoints()
 
-    def updateClimbData(self, matchThreshold):
+    def updateClimbData(self, matchThreshold=None):
         if matchThreshold == None:
             f = lambda x: True
         else:
             x: match
-            f = lambda x: x.data.matchNumber >= matchThreshold
+            f = lambda x: (0 if not x.data.matchNumber.isnumeric() else int(x.data.matchNumber)) >= matchThreshold
 
         t: team
         for k, t in self.teamList.items():
@@ -230,4 +226,4 @@ class regional():
  
     # TODO
     def getTeamsOverClimbThreshold(self, level, percent = None):
-        pass 
+        pass

@@ -25,28 +25,47 @@ def pickleRegional():
 sg.theme('DarkAmber')
 
 inputTab = [
-        [sg.Table([['', '', '', '']], headings=["Raw Data", "Defense Comments", "Catastrophe Comments", "Other Comments"], key="rawMatchList", expand_x=True, expand_y=True)],
-        [sg.Button("Input Data", key="input")]
-        ]   
+            [
+                sg.Table([['', '', '', '']], 
+                headings=["Raw Data", "Defense Comments", "Catastrophe Comments", "Other Comments"],
+                key="rawMatchList", expand_x=True, expand_y=True, auto_size_columns=True)
+            ],
+            [sg.Button("Input Data", key="input")]
+           ]   
 
 firstPickTab = [
-            [sg.Table([['','']], headings=["Team Number", "Tele Avg. Points", "Auto Avg. Points"], key="ShotThreshold", expand_y=True), ]]
+                [sg.Table([['','']],  
+                    headings=["Team Number", "Tele Avg. Points", "Auto Avg. Points", "Climb Level", "Percent High Plus"],
+                    key="ShotThreshold", expand_y=True, auto_size_columns=True), 
+                ]
+               ]
 
 tab3 = [
-        [sg.Table([['', '', '', '', '']], headings=["Team Number", "Tele Avg. Points", "Auto Avg. Points", "Normal Climb Level, Percent", "Percent High+ Climb"], key="masterTable", expand_x=True, expand_y=True)]
-    ]
+        [sg.Table([['', '', '', '', '']], 
+            headings=["Team Number", "Tele Avg. Points", "Auto Avg. Points", "Normal Climb Level, Percent", "Percent High+ Climb"],
+            key="masterTable", expand_x=False, expand_y=True, auto_size_columns=True)
+        ]
+       ]
 
 tab4 = [
         [sg.Text("Enter Team Number"), sg.InputText(key="lookupKey")],
-        [sg.Table([['', '', '', '', '']], headings=["Tele Avg. Points", "Auto Avg. Points", "Normal Climb Level, Percent", "Percent High+ Climb"], key="lookupTable", expand_x=True)]
-    ]
+        [sg.Table([['', '', '', '', '']], 
+            headings=["Tele Avg. Points", "Auto Avg. Points", "Normal Climb Level, Percent", "Percent High+ Climb"],
+            key="lookupTable", expand_x=True, auto_size_columns=True)
+        ]
+       ]
 
-tg_layout = [[sg.Tab('Input Data', inputTab, tooltip='tip'), sg.Tab('First Pick', firstPickTab), sg.Tab('Main List', tab3), sg.Tab('Team Lookup', tab4)]]
+tg_layout = [[
+                sg.Tab('Input Data', inputTab, tooltip='tip'), 
+                sg.Tab('First Pick', firstPickTab), 
+                sg.Tab('Main List', tab3), 
+                sg.Tab('Team Lookup', tab4)
+            ]]
 
 mainWindowLayout = [
-        [sg.TabGroup(tg_layout, expand_x=True, expand_y=True)],
-        [sg.Button("Save Data", key="save")]
-        ]
+                     [sg.TabGroup(tg_layout, expand_x=True, expand_y=True)],
+                     [sg.Button("Save Data", key="save")]
+                   ]
 
 window = sg.Window("Main Window", mainWindowLayout, size=(800,500), resizable=True)
 
@@ -95,10 +114,11 @@ def matchEntry():
             meWin.close()
             return "Closed_Before_Entry"
 
+# File Selection Window
 fswLayout = [
-        [sg.Text("Choose a data file, or hit skip (if starting from scratch)")],
-        [sg.InputText(key="file_name"), sg.FileBrowse()],
-        [sg.Button("Submit"), sg.Button("Skip")],
+            [sg.Text("Choose a data file, or hit skip (if starting from scratch)")],
+            [sg.InputText(key="file_name"), sg.FileBrowse()],
+            [sg.Button("Submit"), sg.Button("Skip")],
         ]
 
 fileSelectWindow = sg.Window("Select Data File", fswLayout)
@@ -155,13 +175,15 @@ try:
             pickleRegional()
             break
         
-        regional.getTeamsOverTelePointThreshold(0)
-        regional.updateAutoData()
-    
+        regional.getTeamsOverTelePointThreshold(0, 20)
+        regional.updateAutoData(20)
+        regional.updateClimbData(20)
+
         firstPickList = list()
+
         t: r.team
         for t in regional.teamsOverShotThreshold:
-            firstPickList.append([t.teamNumber, round(t.averageTelePoints,3), round(t.averageAutoPoints, 3)])
+            firstPickList.append([t.teamNumber, round(t.averageTelePoints,3), round(t.averageAutoPoints, 3), t.levels[0][0]+ '\t' +str(round(t.levels[0][2], 3)), t.high_plus_percent])
         
         firstPickList = firstPickList if len(firstPickList) >= 1 else [[ '', '', '', '']]
 
@@ -181,13 +203,15 @@ try:
                 continue
 
             teamNumber = int(t.teamNumber)
-            masterList_unsorted.append([teamNumber, round(t.averageTelePoints, 3), round(t.averageAutoPoints, 3), '', ''])
+            masterList_unsorted.append([teamNumber, round(t.averageTelePoints, 3), round(t.averageAutoPoints, 3), t.levels[0][0]+ '\t' +str(round(t.levels[0][2], 3)), t.high_plus_percent])
 
         masterList = sorted(masterList_unsorted, key=lambda t: t[0])
         
         lookupNumber = values['lookupKey'] if values['lookupKey'] in regional.teamList.keys() else None
         if not lookupNumber == None:
-            lookupTableList = [round(regional.teamList[lookupNumber].averageTelePoints, 3), round(regional.teamList[lookupNumber].averageTelePoints,3), '', '']
+            lookupTableList = [[round(regional.teamList[lookupNumber].averageTelePoints, 3), 
+                                round(regional.teamList[lookupNumber].averageAutoPoints,3), 
+                                t.levels[0][0]+ '\t' +str(round(t.levels[0][2], 3)), t.high_plus_percent]]
         else:
             lookupTableList = ['', '', '', '']
 
