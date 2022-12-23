@@ -186,7 +186,7 @@ class regional():
             f = lambda x: True
         else:
             x: match
-            f = lambda x: (0 if not x.data.matchNumber.isnumeric() else int(x.data.matchNumber)) >= matchThreshold
+            f = lambda x: (x.data.matchNumber) >= matchThreshold
         
         teams = [] 
 
@@ -205,7 +205,7 @@ class regional():
             f = lambda x: True
         else:
             x: match
-            f = lambda x: (0 if not x.data.matchNumber.isnumeric() else int(x.data.matchNumber)) >= matchThreshold
+            f = lambda x: (x.data.matchNumber) >= matchThreshold
         
         t: team
         for k, t in self.teamList.items():
@@ -217,7 +217,7 @@ class regional():
             f = lambda x: True
         else:
             x: match
-            f = lambda x: (0 if not x.data.matchNumber.isnumeric() else int(x.data.matchNumber)) >= matchThreshold
+            f = lambda x: (x.data.matchNumber) >= matchThreshold
 
         t: team
         for k, t in self.teamList.items():

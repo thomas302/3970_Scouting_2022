@@ -67,7 +67,7 @@ mainWindowLayout = [
                      [sg.Button("Save Data", key="save")]
                    ]
 
-window = sg.Window("Main Window", mainWindowLayout, size=(800,500), resizable=True)
+window = sg.Window("Main Window", mainWindowLayout, size=(800,500), return_keyboard_events=True,resizable=True)
 
 validDataEntry = False
 
@@ -94,13 +94,13 @@ def matchEntry():
         [sg.Button("Submit")],
         ]
     
-    meWin = sg.Window("Data Input", matchEntryLayout)
+    meWin = sg.Window("Data Input", matchEntryLayout, return_keyboard_events=True)
     
     while True:
         event, values = meWin.read()
         # End program if user closes window or
         # presses the OK button
-        if event == "Submit":
+        if event == "Submit" or event == "i:73":
             data = values[0]
             defenseComments = values[1]
             failComments = values[2]
@@ -130,7 +130,7 @@ while True:
 
     print(fileLocation['Browse'])
     
-    if event == "Submit":
+    if event == "Submit" :
         try:
             if os.path.exists(fileLocation['Browse']):
                 f = open(fileLocation['Browse'], 'rb')
@@ -155,7 +155,7 @@ try:
     while True: 
         event, values = window.read(timeout=50) 
 
-        if event == "input":
+        if event == "input" or event == "i:73":
             entry = matchEntry()
 
             if not entry == "Closed_Before_Entry":
@@ -175,7 +175,7 @@ try:
             pickleRegional()
             break
         
-        regional.getTeamsOverTelePointThreshold(0, 20)
+        regional.getTeamsOverTelePointThreshold(0)
         regional.updateAutoData(20)
         regional.updateClimbData(20)
 
